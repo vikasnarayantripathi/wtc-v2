@@ -14,7 +14,7 @@
     }
 
     header {
-      padding: 20px;
+      padding: 24px;
       text-align: center;
       border-bottom: 1px solid #eee;
     }
@@ -30,7 +30,7 @@
     }
 
     .container {
-      max-width: 700px;
+      max-width: 720px;
       margin: 40px auto;
       padding: 20px;
     }
@@ -42,7 +42,7 @@
       background: #fafafa;
     }
 
-    input[type="text"] {
+    input {
       width: 100%;
       padding: 12px;
       font-size: 16px;
@@ -67,7 +67,7 @@
 
     .result {
       margin-top: 25px;
-      padding: 15px;
+      padding: 18px;
       border-radius: 6px;
       display: none;
     }
@@ -82,73 +82,92 @@
       border: 1px solid #f39c12;
     }
 
+    .score {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
     footer {
-      text-align: center;
       margin-top: 60px;
+      padding: 20px;
       font-size: 14px;
-      color: #777;
+      color: #555;
+      border-top: 1px solid #eee;
+      text-align: center;
     }
   </style>
 </head>
 
 <body>
 
-  <header>
-    <h1>Website Trust Checker</h1>
-    <p>Simple, human-readable trust insights for any website</p>
-  </header>
+<header>
+  <h1>Website Trust Checker</h1>
+  <p>Simple, human-readable trust insights for any website</p>
+</header>
 
-  <div class="container">
-    <div class="checker-box">
-      <input type="text" id="websiteInput" placeholder="Enter website URL (example: example.com)" />
-      <button onclick="checkTrust()">Check Website Trust</button>
+<div class="container">
+  <div class="checker-box">
+    <input type="text" id="websiteInput" placeholder="Enter website URL (example: example.com)" />
+    <button onclick="checkTrust()">Check Website Trust</button>
 
-      <div id="resultBox" class="result"></div>
-    </div>
+    <div id="resultBox" class="result"></div>
   </div>
+</div>
 
-  <footer>
+<footer>
+  <strong>Disclaimer:</strong><br>
+  WTC V2 provides informational trust signals only.  
+  It does not guarantee the safety, legitimacy, or intent of any website.
+  Always verify independently before making decisions.<br><br>
+  <span style="color:#999;">
     WTC V2 • Early Beta • Trust explained simply
-  </footer>
+  </span>
+</footer>
 
-  <script>
-    function checkTrust() {
-      const website = document.getElementById("websiteInput").value.trim();
-      const resultBox = document.getElementById("resultBox");
+<script>
+  function checkTrust() {
+    const site = document.getElementById("websiteInput").value.trim();
+    const box = document.getElementById("resultBox");
 
-      if (!website) {
-        alert("Please enter a website URL.");
-        return;
-      }
-
-      // Very simple Phase-1 logic (placeholder)
-      let trustMessage = "";
-      let trustClass = "";
-
-      if (website.includes("https") || website.includes(".com")) {
-        trustMessage = `
-          <strong>Preliminary Trust Signal: Looks Normal</strong><br><br>
-          This website appears to have a standard structure and a valid-looking domain.
-          <br><br>
-          <em>Note:</em> This is an early trust signal based on basic checks.
-          More advanced trust analysis will be added soon.
-        `;
-        trustClass = "safe";
-      } else {
-        trustMessage = `
-          <strong>Preliminary Trust Signal: Use Caution</strong><br><br>
-          This website does not appear to follow common domain patterns.
-          <br><br>
-          <em>Note:</em> Always verify ownership, content, and intent before trusting.
-        `;
-        trustClass = "warning";
-      }
-
-      resultBox.innerHTML = trustMessage;
-      resultBox.className = "result " + trustClass;
-      resultBox.style.display = "block";
+    if (!site) {
+      alert("Please enter a website URL.");
+      return;
     }
-  </script>
+
+    let score = 0;
+    let message = "";
+    let css = "";
+
+    // Very basic Phase-1 heuristic (intentional)
+    if (site.includes(".com") || site.includes("https")) {
+      score = 78;
+      css = "safe";
+      message = `
+        <div class="score">Trust Score: ${score}/100</div>
+        <strong>What this means:</strong><br>
+        • The domain looks standard<br>
+        • Structure appears normal<br>
+        • No obvious red flags at surface level<br><br>
+        <em>This is an early trust signal, not a guarantee.</em>
+      `;
+    } else {
+      score = 42;
+      css = "warning";
+      message = `
+        <div class="score">Trust Score: ${score}/100</div>
+        <strong>What this means:</strong><br>
+        • Domain pattern looks unusual<br>
+        • Extra caution is advised<br><br>
+        <em>Verify ownership, content, and intent carefully.</em>
+      `;
+    }
+
+    box.innerHTML = message;
+    box.className = "result " + css;
+    box.style.display = "block";
+  }
+</script>
 
 </body>
 </html>
