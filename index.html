@@ -1,173 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Website Trust Checker (WTC V2)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #ffffff;
-      color: #222;
-    }
-
-    header {
-      padding: 24px;
-      text-align: center;
-      border-bottom: 1px solid #eee;
-    }
-
-    header h1 {
-      margin: 0;
-      color: #ff7a00;
-    }
-
-    header p {
-      margin-top: 8px;
-      color: #555;
-    }
-
-    .container {
-      max-width: 720px;
-      margin: 40px auto;
-      padding: 20px;
-    }
-
-    .checker-box {
-      border: 1px solid #ddd;
-      padding: 25px;
-      border-radius: 8px;
-      background: #fafafa;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      margin-bottom: 15px;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      background: #ffb703;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #ff9f00;
-    }
-
-    .result {
-      margin-top: 25px;
-      padding: 18px;
-      border-radius: 6px;
-      display: none;
-    }
-
-    .safe {
-      background: #e6f7ed;
-      border: 1px solid #2ecc71;
-    }
-
-    .warning {
-      background: #fff4e5;
-      border: 1px solid #f39c12;
-    }
-
-    .score {
-      font-size: 28px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
-    footer {
-      margin-top: 60px;
-      padding: 20px;
-      font-size: 14px;
-      color: #555;
-      border-top: 1px solid #eee;
-      text-align: center;
-    }
-  </style>
-</head>
-
-<body>
-
-<header>
-  <h1>Website Trust Checker</h1>
-  <p>Simple, human-readable trust insights for any website</p>
-</header>
-
-<div class="container">
-  <div class="checker-box">
-    <input type="text" id="websiteInput" placeholder="Enter website URL (example: example.com)" />
-    <button onclick="checkTrust()">Check Website Trust</button>
-
-    <div id="resultBox" class="result"></div>
-  </div>
-</div>
-
-<footer>
-  <strong>Disclaimer:</strong><br>
-  WTC V2 provides informational trust signals only.  
-  It does not guarantee the safety, legitimacy, or intent of any website.
-  Always verify independently before making decisions.<br><br>
-  <span style="color:#999;">
-    WTC V2 • Early Beta • Trust explained simply
-  </span>
-</footer>
-
 <script>
-  function checkTrust() {
-    const site = document.getElementById("websiteInput").value.trim();
-    const box = document.getElementById("resultBox");
+async function checkTrust() {
+  const domain = document.getElementById("websiteInput").value.trim();
+  const box = document.getElementById("resultBox");
 
-    if (!site) {
-      alert("Please enter a website URL.");
-      return;
-    }
-
-    let score = 0;
-    let message = "";
-    let css = "";
-
-    // Very basic Phase-1 heuristic (intentional)
-    if (site.includes(".com") || site.includes("https")) {
-      score = 78;
-      css = "safe";
-      message = `
-        <div class="score">Trust Score: ${score}/100</div>
-        <strong>What this means:</strong><br>
-        • The domain looks standard<br>
-        • Structure appears normal<br>
-        • No obvious red flags at surface level<br><br>
-        <em>This is an early trust signal, not a guarantee.</em>
-      `;
-    } else {
-      score = 42;
-      css = "warning";
-      message = `
-        <div class="score">Trust Score: ${score}/100</div>
-        <strong>What this means:</strong><br>
-        • Domain pattern looks unusual<br>
-        • Extra caution is advised<br><br>
-        <em>Verify ownership, content, and intent carefully.</em>
-      `;
-    }
-
-    box.innerHTML = message;
-    box.className = "result " + css;
-    box.style.display = "block";
+  if (!domain) {
+    alert("Please enter a website domain");
+    return;
   }
-</script>
 
-</body>
-</html>
+  box.style.display = "block";
+  box.innerHTML = "Analyzing website behavior...";
+
+  try {
+    const res = await fetch(
+      "https://wtc-analyzer.vikasnarayantripathi.workers.dev/?domain=" + domain
+    );
+    const data = await res.json();
+
+    let signal = "Weak";
+    if (data.trust_score >= 80) signal = "Strong";
+    else if (data.trust_score >= 60) signal = "Moderate";
+
+    box.innerHTML = `
+      <h3>WTC Trust Signal: ${signal}</h3>
+      <div class="score">${data.trust_score} / 100</div>
+
+      <strong>Signal Breakdown:</strong>
+      <ul>
+        ${data.explanation.map(e => `<li>${e}</li>`).join("")}
+      </ul>
+
+      <p><em>Behavior-based trust signal. Not a guarantee.</em></p>
+    `;
+  } catch (e) {
+    box.innerHTML = "Unable to analyze website right now.";
+  }
+}
+</script>
