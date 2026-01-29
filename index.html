@@ -1,1 +1,40 @@
+<script>
+async function checkTrust() {
+  const domain = document.getElementById("websiteInput").value.trim();
+  const box = document.getElementById("resultBox");
+
+  if (!domain) {
+    alert("Please enter a website domain");
+    return;
+  }
+
+  box.style.display = "block";
+  box.innerHTML = "Analyzing website behavior...";
+
+  try {
+    const res = await fetch(
+      "https://wtc-analyzer.vikasnarayantripathi.workers.dev/?domain=" + domain
+    );
+    const data = await res.json();
+
+    let signal = "Weak";
+    if (data.trust_score >= 80) signal = "Strong";
+    else if (data.trust_score >= 60) signal = "Moderate";
+
+    box.innerHTML = `
+      <h3>WTC Trust Signal: ${signal}</h3>
+      <div class="score">${data.trust_score} / 100</div>
+
+      <strong>Signal Breakdown:</strong>
+      <ul>
+        ${data.explanation.map(e => `<li>${e}</li>`).join("")}
+      </ul>
+
+      <p><em>Behavior-based trust signal. Not a guarantee.</em></p>
+    `;
+  } catch (e) {
+    box.innerHTML = "Unable to analyze website right now.";
+  }
+}
+</script>
 
