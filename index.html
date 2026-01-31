@@ -70,39 +70,33 @@
       margin: 10px 0;
     }
 
+    .score-strong { color: #22c55e; }
+    .score-moderate { color: #facc15; }
+    .score-weak { color: #ef4444; }
+
+    .confidence {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .confidence-high { color: #22c55e; }
+    .confidence-moderate { color: #facc15; }
+    .confidence-low { color: #ef4444; }
+
+    .trend {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .trend-up { color: #22c55e; }
+    .trend-stable { color: #9ca3af; }
+    .trend-down { color: #ef4444; }
+
     .warning {
       color: #facc15;
       margin-bottom: 10px;
+      font-weight: bold;
     }
-.score-strong {
-  color: #22c55e; /* green */
-}
-
-.score-moderate {
-  color: #facc15; /* yellow */
-}
-
-.score-weak {
-  color: #ef4444; /* red */
-}
-.confidence {
-  margin-top: 8px;
-  font-weight: bold;
-}
-
-.confidence-high {
-  color: #22c55e; /* green */
-}
-
-.confidence-moderate {
-  color: #facc15; /* yellow */
-}
-
-.confidence-low {
-  color: #ef4444; /* red */
-}
-
-  
   </style>
 </head>
 
@@ -110,12 +104,7 @@
   <div class="container">
     <h1>Website Trust Checker</h1>
 
-    <input
-      id="websiteInput"
-      type="text"
-      placeholder="example.com"
-    />
-
+    <input id="websiteInput" type="text" placeholder="example.com" />
     <button onclick="checkTrust()">Check Trust</button>
 
     <div id="resultBox"></div>
@@ -141,104 +130,103 @@
 
         const data = await res.json();
 
-        // ✅ Only treat as error if trust_score is missing
         if (typeof data.trust_score !== "number") {
           box.innerHTML = "Unable to analyze website right now.";
           return;
         }
 
+        // ---- TRUST SIGNAL LABEL ----
         let signal = "Weak";
+        if (data.trust_score >= 80) {
+          signal = data.reachable === false
+            ? "Strong (Limited Reliability)"
+            : "Strong";
+        } else if (data.trust_score >= 60) {
+          signal = "Moderate";
+        }
 
-if (data.trust_score >= 80) {
-  signal = data.reachable === false
-    ? "Strong (Limited Reliability)"
-    : "Strong";
-} else if (data.trust_score >= 60) {
-  signal = "Moderate";
-}
-
-
+        // ---- WARNING ----
         const warning = data.reachable === false
-          ? `<div class="warning">⚠️ Website did not respond reliably during this check.</div>`
+          ? `<div class="warning">⚠ Website did not respond reliably during this check.</div>`
           : "";
+
+        // ---- SCORE CLASS ----
+        const scoreClass =
+          data.trust_score >= 80
+            ? "score-strong"
+            : data.trust_score >= 60
+            ? "score-moderate"
+            : "score-weak";
+
+        // ---- CONFIDENCE ----
+        const confidenceText =
+          data.trust_score >= 80
+            ? "High Confidence"
+            : data.trust_score >= 60
+            ? "Moderate Confidence"
+            : "Low Confidence";
+
+        const confidenceClass =
+          data.trust_score >= 80
+            ? "confidence-high"
+            : data.trust_score >= 60
+            ? "confidence-moderate"
+            : "confidence-low";
+
+        // ---- TREND ----
+        const trendLabel =
+          data.trend === "rising"
+            ? "↑ Rising"
+            : data.trend === "falling"
+            ? "↓ Falling"
+            : "→ Stable";
+
+        const trendClass =
+          data.trend === "rising"
+            ? "trend-up"
+            : data.trend === "falling"
+            ? "trend-down"
+            : "trend-stable";
+
+        // ---- UPTIME ----
+        const uptimeText =
+          typeof data.uptime?.last_day === "number"
+            ? data.uptime.last_day + "%"
+            : "Collecting";
 
         box.innerHTML = `
           ${warning}
 
           <h3>WTC Trust Signal: ${signal}</h3>
-          <div class="score ${data.trust_score >= 80 
-  ? "score-strong" 
-  : data.trust_score >= 60 
-  ? "score-moderate" 
-  : "score-weak"}">
-  ${data.trust_score} / 100
-</div>
-<div class="confidence ${
-  data.trust_score >= 80
-    ? "confidence-high"
-    : data.trust_score >= 60
-    ? "confidence-moderate"
-    : "confidence-low"
-}">
-  ${
-    data.trust_score >= 80
-      ? "High Confidence"
-      : data.trust_score >= 60
-      ? "Moderate Confidence"
-      : "Low Confidence"
-  }
-</div>
 
+          <div class="score ${scoreClass}">
+            ${data.trust_score} / 100
+          </div>
 
-          <p class="trend ${
-  data.trend === "rising"
-    ? "trend-up"
-    : data.trend === "falling"
-    ? "trend-down"
-    : "trend-stable"
-}">
-  <strong>Trend:</strong>
-  ${
-    data.trend === "rising"
-      ? "↑ Rising"
-      : data.trend === "falling"
-      ? "↓ Falling"
-      : "→ Stable"
-  }
-</p>
+          <div class="confidence ${confidenceClass}">
+            ${confidenceText}
+          </div>
+
+          <div class="trend ${trendClass}">
+            Trend: ${trendLabel}
+          </div>
 
           <p><strong>Uptime:</strong></p>
           <ul>
-            <li>
-  Last Day: ${
-    typeof data.uptime?.last_day === "number"
-      ? data.uptime.last_day + "%"
-      : "Collecting"
-  }
-</li>
-
+            <li>Last Day: ${uptimeText}</li>
           </ul>
 
           <strong>Signal Breakdown:</strong>
           <ul>
-           ${data.explanations.map(e => {
-  if (data.reachable === false && e.message.includes("reachable")) {
-    return `<li>Website did not respond reliably during this check.</li>`;
-  }
-  return `<li>${e.message}</li>`;
-}).join("")}
-
+            ${data.explanations.map(e => `<li>${e.message}</li>`).join("")}
           </ul>
 
           <p><em>Behavior-based trust signal. Not a guarantee.</em></p>
         `;
-
-      } catch (e) {
+      } catch {
         box.innerHTML = "Unable to analyze website right now.";
       }
     }
   </script>
 </body>
 </html>
-
-
