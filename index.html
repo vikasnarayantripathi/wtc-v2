@@ -202,7 +202,14 @@
 
           <p><strong>Uptime:</strong></p>
           <ul>
-            <li>Last Day: ${data.uptime?.last_day ?? "Collecting"}%</li>
+            <li>
+  Last Day: ${
+    typeof data.uptime?.last_day === "number"
+      ? data.uptime.last_day + "%"
+      : "Collecting"
+  }
+</li>
+
           </ul>
 
           <strong>Signal Breakdown:</strong>
