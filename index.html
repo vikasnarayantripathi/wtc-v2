@@ -76,22 +76,9 @@
       margin: 10px 0;
     }
 
-    .score-strong { color: #22c55e; }
-    .score-moderate { color: #facc15; }
-    .score-weak { color: #ef4444; }
-
-    .confidence {
-      font-weight: bold;
-      margin-bottom: 6px;
-    }
-
-    .confidence-high { color: #22c55e; }
-    .confidence-moderate { color: #facc15; }
-    .confidence-low { color: #ef4444; }
-
-    /* ===== MINI HISTORY GRAPH ===== */
+    /* ===== ASCENDING CONFIDENCE BARS ===== */
     .history {
-      margin: 12px 0 16px 0;
+      margin: 14px 0 18px 0;
     }
 
     .history-label {
@@ -102,37 +89,24 @@
 
     .sparkline {
       display: flex;
-      gap: 4px;
       align-items: flex-end;
-      height: 40px;
+      gap: 6px;
+      height: 44px;
     }
 
     .spark {
-      width: 10px;
-      border-radius: 3px;
-      background: #e5e7eb;
-      opacity: 0.9;
+      width: 14px;
+      border-radius: 4px;
+      background: #374151; /* grey */
+      height: 10px;
     }
 
-    .spark-strong { background: #22c55e; }
-    .spark-moderate { background: #facc15; }
-    .spark-weak { background: #ef4444; }
-
-    /* ===== TREND ===== */
-    .trend {
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
-    .trend-up { color: #22c55e; }
-    .trend-stable { color: #9ca3af; }
-    .trend-down { color: #ef4444; }
-
-    .warning {
-      color: #facc15;
-      margin-bottom: 10px;
-      font-weight: bold;
-    }
+    .bar-darkred { background: #b91c1c; }
+    .bar-red { background: #ef4444; }
+    .bar-orange { background: #fb923c; }
+    .bar-yellow { background: #facc15; }
+    .bar-lightgreen { background: #4ade80; }
+    .bar-green { background: #22c55e; }
 
     .footer {
       margin-top: 25px;
@@ -174,6 +148,15 @@
   </div>
 
   <script>
+    function getBarConfig(score) {
+      if (score <= 20) return { on: 2, cls: "bar-darkred" };
+      if (score <= 40) return { on: 4, cls: "bar-red" };
+      if (score <= 55) return { on: 5, cls: "bar-orange" };
+      if (score <= 70) return { on: 7, cls: "bar-yellow" };
+      if (score <= 85) return { on: 8, cls: "bar-lightgreen" };
+      return { on: 9, cls: "bar-green" };
+    }
+
     async function checkTrust() {
       const domain = document.getElementById("websiteInput").value.trim();
       const box = document.getElementById("resultBox");
@@ -192,124 +175,27 @@
         );
 
         const data = await res.json();
-
         if (typeof data.trust_score !== "number") {
           box.innerHTML = "Unable to analyze website right now.";
           return;
         }
 
-        let signal = "Weak";
-        if (data.trust_score >= 80) {
-          signal = data.reachable === false
-            ? "Strong (Limited Reliability)"
-            : "Strong";
-        } else if (data.trust_score >= 60) {
-          signal = "Moderate";
-        }
-
-        const warning = data.reachable === false
-          ? `<div class="warning">⚠ Website did not respond reliably during this check.</div>`
-          : "";
-
-        const scoreClass =
-          data.trust_score >= 80
-            ? "score-strong"
-            : data.trust_score >= 60
-            ? "score-moderate"
-            : "score-weak";
-
-        const confidenceText =
-          data.trust_score >= 80
-            ? "High Confidence"
-            : data.trust_score >= 60
-            ? "Moderate Confidence"
-            : "Low Confidence";
-
-        const confidenceClass =
-          data.trust_score >= 80
-            ? "confidence-high"
-            : data.trust_score >= 60
-            ? "confidence-moderate"
-            : "confidence-low";
-
-        const trendLabel =
-          data.trend === "rising"
-            ? "↑ Rising"
-            : data.trend === "falling"
-            ? "↓ Falling"
-            : "→ Stable";
-
-        const trendClass =
-          data.trend === "rising"
-            ? "trend-up"
-            : data.trend === "falling"
-            ? "trend-down"
-            : "trend-stable";
-
-        const uptimeText =
-          typeof data.uptime?.last_day === "number"
-            ? data.uptime.last_day + "%"
-            : "Collecting";
-
-        const sparkClass =
-          data.trust_score >= 80
-            ? "spark-strong"
-            : data.trust_score >= 60
-            ? "spark-moderate"
-            : "spark-weak";
-
-        const sparkHeight = Math.max(14, Math.min(40, data.trust_score / 2));
+        const cfg = getBarConfig(data.trust_score);
+        const heights = [12, 16, 20, 24, 28, 32, 36, 40, 42, 44];
 
         box.innerHTML = `
-          ${warning}
+          <div class="score">${data.trust_score} / 100</div>
 
-          <h3>WTC Trust Signal: ${signal}</h3>
-
-          <div class="score ${scoreClass}">
-            ${data.trust_score} / 100
-          </div>
-
-          <div class="confidence ${confidenceClass}">
-            ${confidenceText}
-          </div>
-
-          <!-- MINI HISTORY -->
           <div class="history">
-            <div class="history-label">Recent Trust History</div>
+            <div class="history-label">Trust Strength</div>
             <div class="sparkline">
-              ${Array.from({ length: 10 }).map(() =>
-                `<div class="spark ${sparkClass}" style="height:${sparkHeight}px"></div>`
-              ).join("")}
+              ${Array.from({ length: 10 }).map((_, i) => {
+                if (i < cfg.on) {
+                  return `<div class="spark ${cfg.cls}" style="height:${heights[i]}px"></div>`;
+                }
+                return `<div class="spark"></div>`;
+              }).join("")}
             </div>
-          </div>
-
-          <div class="trend ${trendClass}">
-            Trend: ${trendLabel}
-          </div>
-
-          <p><strong>Uptime:</strong></p>
-          <ul>
-            <li>Last Day: ${uptimeText}</li>
-          </ul>
-
-          <strong>Signal Breakdown:</strong>
-          <ul>
-            ${data.explanations.map(e => `<li>${e.message}</li>`).join("")}
-          </ul>
-
-          <div style="
-            margin-top: 15px;
-            padding: 12px;
-            background: #020617;
-            border-left: 4px solid #facc15;
-            color: #fde68a;
-            font-size: 14px;
-          ">
-            <strong>Disclaimer:</strong>
-            Website Trust Checker provides an informational trust signal based on
-            observable technical behavior and availability patterns.
-            It is not a security audit, certification, or guarantee of safety.
-            Users should apply their own judgment before interacting with any website.
           </div>
         `;
       } catch {
