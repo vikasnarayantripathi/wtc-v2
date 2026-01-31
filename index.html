@@ -97,25 +97,25 @@
       margin-bottom: 10px;
       font-weight: bold;
     }
-.footer {
-  margin-top: 25px;
-  padding-top: 15px;
-  border-top: 1px solid #1e293b;
-  font-size: 14px;
-  text-align: center;
-  color: #9ca3af;
-}
 
-.footer a {
-  color: #60a5fa;
-  text-decoration: none;
-  margin: 0 8px;
-}
+    .footer {
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 1px solid #1e293b;
+      font-size: 14px;
+      text-align: center;
+      color: #9ca3af;
+    }
 
-.footer a:hover {
-  text-decoration: underline;
-}
+    .footer a {
+      color: #60a5fa;
+      text-decoration: none;
+      margin: 0 6px;
+    }
 
+    .footer a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 
@@ -127,13 +127,14 @@
     <button onclick="checkTrust()">Check Trust</button>
 
     <div id="resultBox"></div>
-  </div>
-<div class="footer">
-  <a href="about.html">How it Works</a> |
-  <a href="privacy.html">Privacy Policy</a> |
-  <a href="terms.html">Terms of Use</a>
-</div>
 
+    <!-- ✅ FOOTER (STATIC, ALWAYS AT BOTTOM) -->
+    <div class="footer">
+      <a href="about.html">How it Works</a> |
+      <a href="privacy.html">Privacy Policy</a> |
+      <a href="terms.html">Terms of Use</a>
+    </div>
+  </div>
 
   <script>
     async function checkTrust() {
@@ -160,7 +161,6 @@
           return;
         }
 
-        // ---- TRUST SIGNAL LABEL ----
         let signal = "Weak";
         if (data.trust_score >= 80) {
           signal = data.reachable === false
@@ -170,12 +170,10 @@
           signal = "Moderate";
         }
 
-        // ---- WARNING ----
         const warning = data.reachable === false
           ? `<div class="warning">⚠ Website did not respond reliably during this check.</div>`
           : "";
 
-        // ---- SCORE CLASS ----
         const scoreClass =
           data.trust_score >= 80
             ? "score-strong"
@@ -183,7 +181,6 @@
             ? "score-moderate"
             : "score-weak";
 
-        // ---- CONFIDENCE ----
         const confidenceText =
           data.trust_score >= 80
             ? "High Confidence"
@@ -198,7 +195,6 @@
             ? "confidence-moderate"
             : "confidence-low";
 
-        // ---- TREND ----
         const trendLabel =
           data.trend === "rising"
             ? "↑ Rising"
@@ -213,7 +209,6 @@
             ? "trend-down"
             : "trend-stable";
 
-        // ---- UPTIME ----
         const uptimeText =
           typeof data.uptime?.last_day === "number"
             ? data.uptime.last_day + "%"
@@ -246,21 +241,20 @@
             ${data.explanations.map(e => `<li>${e.message}</li>`).join("")}
           </ul>
 
-         <div style="
-  margin-top: 15px;
-  padding: 12px;
-  background: #020617;
-  border-left: 4px solid #facc15;
-  color: #fde68a;
-  font-size: 14px;
-">
-  <strong>Disclaimer:</strong>
-  Website Trust Checker provides an informational trust signal based on
-  observable technical behavior and availability patterns.
-  It is not a security audit, certification, or guarantee of safety.
-  Users should apply their own judgment before interacting with any website.
-</div>
-
+          <div style="
+            margin-top: 15px;
+            padding: 12px;
+            background: #020617;
+            border-left: 4px solid #facc15;
+            color: #fde68a;
+            font-size: 14px;
+          ">
+            <strong>Disclaimer:</strong>
+            Website Trust Checker provides an informational trust signal based on
+            observable technical behavior and availability patterns.
+            It is not a security audit, certification, or guarantee of safety.
+            Users should apply their own judgment before interacting with any website.
+          </div>
         `;
       } catch {
         box.innerHTML = "Unable to analyze website right now.";
