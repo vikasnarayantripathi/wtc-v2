@@ -69,6 +69,11 @@
       font-weight: bold;
       margin: 10px 0;
     }
+
+    .warning {
+      color: #facc15;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 
@@ -104,33 +109,45 @@
         const res = await fetch(
           "https://wtc-analyzer.vikasnarayantripathi.workers.dev/?domain=" + domain
         );
+
         const data = await res.json();
+
+        // ✅ Only treat as error if trust_score is missing
+        if (typeof data.trust_score !== "number") {
+          box.innerHTML = "Unable to analyze website right now.";
+          return;
+        }
 
         let signal = "Weak";
         if (data.trust_score >= 80) signal = "Strong";
         else if (data.trust_score >= 60) signal = "Moderate";
 
+        const warning = data.reachable === false
+          ? `<div class="warning">⚠️ Website did not respond reliably during this check.</div>`
+          : "";
+
         box.innerHTML = `
-  <h3>WTC Trust Signal: ${signal}</h3>
-  <div class="score">${data.trust_score} / 100</div>
+          ${warning}
 
-  <p><strong>Trend:</strong> ${data.trend.toUpperCase()}</p>
+          <h3>WTC Trust Signal: ${signal}</h3>
+          <div class="score">${data.trust_score} / 100</div>
 
-  <p><strong>Uptime:</strong></p>
-  <ul>
-    <li>Last Hour: ${data.uptime?.last_hour ?? "N/A"}%</li>
-    <li>Last Day: ${data.uptime?.last_day ?? "N/A"}%</li>
-    <li>Last Week: ${data.uptime?.last_week ?? "N/A"}%</li>
-    <li>Last Month: ${data.uptime?.last_month ?? "N/A"}%</li>
-  </ul>
+          <p><strong>Trend:</strong> ${data.trend.toUpperCase()}</p>
 
-  <strong>Signal Breakdown:</strong>
-  <ul>
-    ${data.explanation.map(e => `<li>${e}</li>`).join("")}
-  </ul>
+          <p><strong>Uptime:</strong></p>
+          <ul>
+            <li>Last Day: ${data.uptime?.last_day ?? "Collecting"}%</li>
+          </ul>
 
-  <p><em>Behavior-based trust signal. Not a guarantee.</em></p>
-`;
+          <strong>Signal Breakdown:</strong>
+          <ul>
+            ${data.explanations.map(e =>
+              `<li>${e.message}</li>`
+            ).join("")}
+          </ul>
+
+          <p><em>Behavior-based trust signal. Not a guarantee.</em></p>
+        `;
 
       } catch (e) {
         box.innerHTML = "Unable to analyze website right now.";
