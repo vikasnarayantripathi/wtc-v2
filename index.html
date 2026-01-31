@@ -148,8 +148,15 @@
         }
 
         let signal = "Weak";
-        if (data.trust_score >= 80) signal = "Strong";
-        else if (data.trust_score >= 60) signal = "Moderate";
+
+if (data.trust_score >= 80) {
+  signal = data.reachable === false
+    ? "Strong (Limited Reliability)"
+    : "Strong";
+} else if (data.trust_score >= 60) {
+  signal = "Moderate";
+}
+
 
         const warning = data.reachable === false
           ? `<div class="warning">⚠️ Website did not respond reliably during this check.</div>`
