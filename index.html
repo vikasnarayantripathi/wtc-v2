@@ -31,6 +31,7 @@
       margin-bottom: 20px;
     }
 
+    /* ✅ FIXED FORM ALIGNMENT */
     .form-group {
       display: flex;
       flex-direction: column;
@@ -44,6 +45,7 @@
       border-radius: 6px;
       border: none;
       font-size: 16px;
+      box-sizing: border-box;
     }
 
     button {
@@ -75,6 +77,27 @@
       margin: 8px 0;
     }
 
+    /* ===== DOTTED CONFIDENCE BAR (POINT 2) ===== */
+    .dot-bar {
+      display: flex;
+      gap: 6px;
+      margin: 6px 0 10px 0;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #374151;
+    }
+
+    .dot-darkred { background: #b91c1c; }
+    .dot-red { background: #ef4444; }
+    .dot-orange { background: #fb923c; }
+    .dot-yellow { background: #facc15; }
+    .dot-lightgreen { background: #4ade80; }
+    .dot-green { background: #22c55e; }
+
     .confidence {
       font-weight: bold;
       margin-bottom: 6px;
@@ -84,7 +107,7 @@
     .confidence-moderate { color: #facc15; }
     .confidence-low { color: #ef4444; }
 
-    /* ===== ASCENDING CONFIDENCE BARS ===== */
+    /* ===== ASCENDING BARS (POINT 1) ===== */
     .history {
       margin: 12px 0 16px 0;
     }
@@ -172,13 +195,13 @@
   </div>
 
   <script>
-    function getBarConfig(score) {
-      if (score <= 20) return { on: 2, cls: "bar-darkred", conf: "Low Confidence", ccls: "confidence-low" };
-      if (score <= 40) return { on: 4, cls: "bar-red", conf: "Low Confidence", ccls: "confidence-low" };
-      if (score <= 55) return { on: 5, cls: "bar-orange", conf: "Moderate Confidence", ccls: "confidence-moderate" };
-      if (score <= 70) return { on: 7, cls: "bar-yellow", conf: "Moderate Confidence", ccls: "confidence-moderate" };
-      if (score <= 85) return { on: 8, cls: "bar-lightgreen", conf: "High Confidence", ccls: "confidence-high" };
-      return { on: 9, cls: "bar-green", conf: "High Confidence", ccls: "confidence-high" };
+    function getVisualConfig(score) {
+      if (score <= 20) return { on: 2, bar: "bar-darkred", dot: "dot-darkred", conf: "Low Confidence", ccls: "confidence-low" };
+      if (score <= 40) return { on: 4, bar: "bar-red", dot: "dot-red", conf: "Low Confidence", ccls: "confidence-low" };
+      if (score <= 55) return { on: 5, bar: "bar-orange", dot: "dot-orange", conf: "Moderate Confidence", ccls: "confidence-moderate" };
+      if (score <= 70) return { on: 7, bar: "bar-yellow", dot: "dot-yellow", conf: "Moderate Confidence", ccls: "confidence-moderate" };
+      if (score <= 85) return { on: 8, bar: "bar-lightgreen", dot: "dot-lightgreen", conf: "High Confidence", ccls: "confidence-high" };
+      return { on: 9, bar: "bar-green", dot: "dot-green", conf: "High Confidence", ccls: "confidence-high" };
     }
 
     async function checkTrust() {
@@ -204,7 +227,7 @@
           return;
         }
 
-        const cfg = getBarConfig(data.trust_score);
+        const cfg = getVisualConfig(data.trust_score);
         const heights = [12,16,20,24,28,32,36,40,42,44];
 
         const warning = data.reachable === false
@@ -220,16 +243,24 @@
 
           <div class="score">${data.trust_score} / 100</div>
 
+          <!-- DOTTED BAR -->
+          <div class="dot-bar">
+            ${Array.from({ length: 10 }).map((_, i) =>
+              `<div class="dot ${i < cfg.on ? cfg.dot : ""}"></div>`
+            ).join("")}
+          </div>
+
           <div class="confidence ${cfg.ccls}">
             ${cfg.conf}
           </div>
 
+          <!-- ASCENDING BARS -->
           <div class="history">
             <div class="history-label">Trust Strength</div>
             <div class="bar-container">
               ${Array.from({ length: 10 }).map((_, i) =>
                 i < cfg.on
-                  ? `<div class="bar ${cfg.cls}" style="height:${heights[i]}px"></div>`
+                  ? `<div class="bar ${cfg.bar}" style="height:${heights[i]}px"></div>`
                   : `<div class="bar"></div>`
               ).join("")}
             </div>
