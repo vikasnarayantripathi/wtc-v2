@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>Website Trust Checker</title>
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -32,13 +31,21 @@
       margin-bottom: 20px;
     }
 
+    /* ✅ NEW: form alignment wrapper */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
     input {
       width: 100%;
       padding: 12px;
       border-radius: 6px;
       border: none;
-      margin-bottom: 10px;
       font-size: 16px;
+      box-sizing: border-box;
     }
 
     button {
@@ -123,12 +130,14 @@
   <div class="container">
     <h1>Website Trust Checker</h1>
 
-    <input id="websiteInput" type="text" placeholder="example.com" />
-    <button onclick="checkTrust()">Check Trust</button>
+    <!-- ✅ FIXED ALIGNMENT -->
+    <div class="form-group">
+      <input id="websiteInput" type="text" placeholder="example.com" />
+      <button onclick="checkTrust()">Check Trust</button>
+    </div>
 
     <div id="resultBox"></div>
 
-    <!-- ✅ FOOTER (STATIC, ALWAYS AT BOTTOM) -->
     <div class="footer">
       <a href="about.html">How it Works</a> |
       <a href="privacy.html">Privacy Policy</a> |
