@@ -166,6 +166,21 @@
   : "score-weak"}">
   ${data.trust_score} / 100
 </div>
+<div class="confidence ${
+  data.trust_score >= 80
+    ? "confidence-high"
+    : data.trust_score >= 60
+    ? "confidence-moderate"
+    : "confidence-low"
+}">
+  ${
+    data.trust_score >= 80
+      ? "High Confidence"
+      : data.trust_score >= 60
+      ? "Moderate Confidence"
+      : "Low Confidence"
+  }
+</div>
 
 
           <p class="trend ${
