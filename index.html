@@ -207,9 +207,13 @@
 
           <strong>Signal Breakdown:</strong>
           <ul>
-            ${data.explanations.map(e =>
-              `<li>${e.message}</li>`
-            ).join("")}
+           ${data.explanations.map(e => {
+  if (data.reachable === false && e.message.includes("reachable")) {
+    return `<li>Website did not respond reliably during this check.</li>`;
+  }
+  return `<li>${e.message}</li>`;
+}).join("")}
+
           </ul>
 
           <p><em>Behavior-based trust signal. Not a guarantee.</em></p>
