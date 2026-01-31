@@ -221,7 +221,21 @@
             ${data.explanations.map(e => `<li>${e.message}</li>`).join("")}
           </ul>
 
-          <p><em>Behavior-based trust signal. Not a guarantee.</em></p>
+         <div style="
+  margin-top: 15px;
+  padding: 12px;
+  background: #020617;
+  border-left: 4px solid #facc15;
+  color: #fde68a;
+  font-size: 14px;
+">
+  <strong>Disclaimer:</strong>
+  Website Trust Checker provides an informational trust signal based on
+  observable technical behavior and availability patterns.
+  It is not a security audit, certification, or guarantee of safety.
+  Users should apply their own judgment before interacting with any website.
+</div>
+
         `;
       } catch {
         box.innerHTML = "Unable to analyze website right now.";
