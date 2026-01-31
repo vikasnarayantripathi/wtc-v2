@@ -143,7 +143,14 @@
           ${warning}
 
           <h3>WTC Trust Signal: ${signal}</h3>
-          <div class="score">${data.trust_score} / 100</div>
+          <div class="score ${data.trust_score >= 80 
+  ? "score-strong" 
+  : data.trust_score >= 60 
+  ? "score-moderate" 
+  : "score-weak"}">
+  ${data.trust_score} / 100
+</div>
+
 
           <p><strong>Trend:</strong> ${data.trend.toUpperCase()}</p>
 
