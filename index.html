@@ -152,7 +152,22 @@
 </div>
 
 
-          <p><strong>Trend:</strong> ${data.trend.toUpperCase()}</p>
+          <p class="trend ${
+  data.trend === "rising"
+    ? "trend-up"
+    : data.trend === "falling"
+    ? "trend-down"
+    : "trend-stable"
+}">
+  <strong>Trend:</strong>
+  ${
+    data.trend === "rising"
+      ? "↑ Rising"
+      : data.trend === "falling"
+      ? "↓ Falling"
+      : "→ Stable"
+  }
+</p>
 
           <p><strong>Uptime:</strong></p>
           <ul>
