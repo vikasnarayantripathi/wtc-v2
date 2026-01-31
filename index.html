@@ -31,7 +31,6 @@
       margin-bottom: 20px;
     }
 
-    /* ✅ NEW: form alignment wrapper */
     .form-group {
       display: flex;
       flex-direction: column;
@@ -83,13 +82,43 @@
 
     .confidence {
       font-weight: bold;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     }
 
     .confidence-high { color: #22c55e; }
     .confidence-moderate { color: #facc15; }
     .confidence-low { color: #ef4444; }
 
+    /* ===== MINI HISTORY GRAPH ===== */
+    .history {
+      margin: 12px 0 16px 0;
+    }
+
+    .history-label {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+
+    .sparkline {
+      display: flex;
+      gap: 4px;
+      align-items: flex-end;
+      height: 40px;
+    }
+
+    .spark {
+      width: 10px;
+      border-radius: 3px;
+      background: #e5e7eb;
+      opacity: 0.9;
+    }
+
+    .spark-strong { background: #22c55e; }
+    .spark-moderate { background: #facc15; }
+    .spark-weak { background: #ef4444; }
+
+    /* ===== TREND ===== */
     .trend {
       font-weight: bold;
       margin-bottom: 10px;
@@ -130,7 +159,6 @@
   <div class="container">
     <h1>Website Trust Checker</h1>
 
-    <!-- ✅ FIXED ALIGNMENT -->
     <div class="form-group">
       <input id="websiteInput" type="text" placeholder="example.com" />
       <button onclick="checkTrust()">Check Trust</button>
@@ -223,6 +251,15 @@
             ? data.uptime.last_day + "%"
             : "Collecting";
 
+        const sparkClass =
+          data.trust_score >= 80
+            ? "spark-strong"
+            : data.trust_score >= 60
+            ? "spark-moderate"
+            : "spark-weak";
+
+        const sparkHeight = Math.max(14, Math.min(40, data.trust_score / 2));
+
         box.innerHTML = `
           ${warning}
 
@@ -234,6 +271,16 @@
 
           <div class="confidence ${confidenceClass}">
             ${confidenceText}
+          </div>
+
+          <!-- MINI HISTORY -->
+          <div class="history">
+            <div class="history-label">Recent Trust History</div>
+            <div class="sparkline">
+              ${Array.from({ length: 10 }).map(() =>
+                `<div class="spark ${sparkClass}" style="height:${sparkHeight}px"></div>`
+              ).join("")}
+            </div>
           </div>
 
           <div class="trend ${trendClass}">
