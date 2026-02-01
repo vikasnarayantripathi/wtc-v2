@@ -26,12 +26,8 @@
       box-shadow: 0 0 30px rgba(0,0,0,0.5);
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+    h1 { text-align: center; margin-bottom: 20px; }
 
-    /* ✅ FIXED FORM ALIGNMENT */
     .form-group {
       display: flex;
       flex-direction: column;
@@ -59,9 +55,7 @@
       cursor: pointer;
     }
 
-    button:hover {
-      background: #1d4ed8;
-    }
+    button:hover { background: #1d4ed8; }
 
     #resultBox {
       margin-top: 20px;
@@ -71,25 +65,10 @@
       background: #020617;
     }
 
-    .score {
-      font-size: 32px;
-      font-weight: bold;
-      margin: 8px 0;
-    }
+    .score { font-size: 32px; font-weight: bold; margin: 8px 0; }
 
-    /* ===== DOTTED CONFIDENCE BAR (POINT 2) ===== */
-    .dot-bar {
-      display: flex;
-      gap: 6px;
-      margin: 6px 0 10px 0;
-    }
-
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #374151;
-    }
+    .dot-bar { display: flex; gap: 6px; margin: 6px 0 10px 0; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #374151; }
 
     .dot-darkred { background: #b91c1c; }
     .dot-red { background: #ef4444; }
@@ -98,39 +77,16 @@
     .dot-lightgreen { background: #4ade80; }
     .dot-green { background: #22c55e; }
 
-    .confidence {
-      font-weight: bold;
-      margin-bottom: 6px;
-    }
-
+    .confidence { font-weight: bold; margin-bottom: 6px; }
     .confidence-high { color: #22c55e; }
     .confidence-moderate { color: #facc15; }
     .confidence-low { color: #ef4444; }
 
-    /* ===== ASCENDING BARS (POINT 1) ===== */
-    .history {
-      margin: 12px 0 16px 0;
-    }
+    .history { margin: 12px 0 16px 0; }
+    .history-label { font-size: 13px; color: #9ca3af; margin-bottom: 6px; }
 
-    .history-label {
-      font-size: 13px;
-      color: #9ca3af;
-      margin-bottom: 6px;
-    }
-
-    .bar-container {
-      display: flex;
-      align-items: flex-end;
-      gap: 6px;
-      height: 44px;
-    }
-
-    .bar {
-      width: 14px;
-      height: 10px;
-      border-radius: 4px;
-      background: #374151;
-    }
+    .bar-container { display: flex; align-items: flex-end; gap: 6px; height: 44px; }
+    .bar { width: 14px; height: 10px; border-radius: 4px; background: #374151; }
 
     .bar-darkred { background: #b91c1c; }
     .bar-red { background: #ef4444; }
@@ -139,20 +95,17 @@
     .bar-lightgreen { background: #4ade80; }
     .bar-green { background: #22c55e; }
 
-    /* ===== TREND ===== */
-    .trend {
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
-
+    .trend { font-weight: bold; margin-bottom: 8px; }
     .trend-up { color: #22c55e; }
     .trend-stable { color: #9ca3af; }
     .trend-down { color: #ef4444; }
 
-    .warning {
-      color: #facc15;
-      margin-bottom: 10px;
-      font-weight: bold;
+    .warning { color: #facc15; margin-bottom: 10px; font-weight: bold; }
+
+    .uptime-explain {
+      margin-top: 6px;
+      font-size: 14px;
+      color: #9ca3af;
     }
 
     .footer {
@@ -168,10 +121,6 @@
       color: #60a5fa;
       text-decoration: none;
       margin: 0 6px;
-    }
-
-    .footer a:hover {
-      text-decoration: underline;
     }
   </style>
 </head>
@@ -207,96 +156,56 @@
     async function checkTrust() {
       const domain = document.getElementById("websiteInput").value.trim();
       const box = document.getElementById("resultBox");
-
-      if (!domain) {
-        alert("Please enter a website domain");
-        return;
-      }
+      if (!domain) return alert("Please enter a website domain");
 
       box.style.display = "block";
       box.innerHTML = "Analyzing website behavior...";
 
-      try {
-        const res = await fetch(
-          "https://wtc-analyzer.vikasnarayantripathi.workers.dev/?domain=" + domain
-        );
+      const res = await fetch(
+        "https://wtc-analyzer.vikasnarayantripathi.workers.dev/?domain=" + domain
+      );
+      const data = await res.json();
 
-        const data = await res.json();
-        if (typeof data.trust_score !== "number") {
-          box.innerHTML = "Unable to analyze website right now.";
-          return;
-        }
+      const uptimeExplanations = data.explanations.filter(e =>
+        e.message.toLowerCase().includes("uptime") ||
+        e.message.toLowerCase().includes("availability")
+      );
 
-        const cfg = getVisualConfig(data.trust_score);
-        const heights = [12,16,20,24,28,32,36,40,42,44];
+      const cfg = getVisualConfig(data.trust_score);
+      const heights = [12,16,20,24,28,32,36,40,42,44];
 
-        const warning = data.reachable === false
-          ? `<div class="warning">⚠ Website did not respond reliably during this check.</div>`
-          : "";
+      box.innerHTML = `
+        <div class="score">${data.trust_score} / 100</div>
 
-        const trendLabel =
-          data.trend === "rising" ? "↑ Rising" :
-          data.trend === "falling" ? "↓ Falling" : "→ Stable";
+        <div class="dot-bar">
+          ${Array.from({ length: 10 }).map((_, i) =>
+            `<div class="dot ${i < cfg.on ? cfg.dot : ""}"></div>`
+          ).join("")}
+        </div>
 
-        box.innerHTML = `
-          ${warning}
+        <div class="confidence ${cfg.ccls}">${cfg.conf}</div>
 
-          <div class="score">${data.trust_score} / 100</div>
-
-          <!-- DOTTED BAR -->
-          <div class="dot-bar">
+        <div class="history">
+          <div class="history-label">Trust Strength</div>
+          <div class="bar-container">
             ${Array.from({ length: 10 }).map((_, i) =>
-              `<div class="dot ${i < cfg.on ? cfg.dot : ""}"></div>`
+              i < cfg.on
+                ? `<div class="bar ${cfg.bar}" style="height:${heights[i]}px"></div>`
+                : `<div class="bar"></div>`
             ).join("")}
           </div>
+        </div>
 
-          <div class="confidence ${cfg.ccls}">
-            ${cfg.conf}
-          </div>
+        <div class="trend">→ ${data.trend}</div>
 
-          <!-- ASCENDING BARS -->
-          <div class="history">
-            <div class="history-label">Trust Strength</div>
-            <div class="bar-container">
-              ${Array.from({ length: 10 }).map((_, i) =>
-                i < cfg.on
-                  ? `<div class="bar ${cfg.bar}" style="height:${heights[i]}px"></div>`
-                  : `<div class="bar"></div>`
-              ).join("")}
-            </div>
-          </div>
+        <p><strong>Uptime:</strong> ${data.uptime?.last_day ?? "Collecting"}%</p>
+        ${uptimeExplanations.map(e => `<div class="uptime-explain">${e.message}</div>`).join("")}
 
-          <div class="trend">${trendLabel}</div>
-
-          <p><strong>Uptime:</strong> ${
-            typeof data.uptime?.last_day === "number"
-              ? data.uptime.last_day + "%"
-              : "Collecting"
-          }</p>
-
-          <strong>Signal Breakdown:</strong>
-          <ul>
-            ${data.explanations.map(e => `<li>${e.message}</li>`).join("")}
-          </ul>
-
-          <div style="
-            margin-top: 15px;
-            padding: 12px;
-            background: #020617;
-            border-left: 4px solid #facc15;
-            color: #fde68a;
-            font-size: 14px;
-          ">
-            <strong>Disclaimer:</strong>
-            Website Trust Checker provides an informational trust signal based on
-            observable technical behavior and availability patterns.
-            It is not a security audit, certification, or guarantee of safety.
-            Users should apply their own judgment before interacting with any website.
-          </div>
-        `;
-      } catch {
-        box.innerHTML = "Unable to analyze website right now.";
-      }
+        <strong>Signal Breakdown:</strong>
+        <ul>
+          ${data.explanations.map(e => `<li>${e.message}</li>`).join("")}
+        </ul>
+      `;
     }
   </script>
 </body>
