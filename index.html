@@ -35,7 +35,8 @@
       margin-bottom: 10px;
     }
 
-    input, button {
+    input {
+      width: 100%;
       padding: 12px;
       border-radius: 6px;
       border: none;
@@ -43,8 +44,13 @@
     }
 
     button {
+      width: 100%;
+      padding: 12px;
       background: #2563eb;
       color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
       cursor: pointer;
     }
 
@@ -60,9 +66,34 @@
 
     .score { font-size: 32px; font-weight: bold; margin: 8px 0; }
 
+    /* dotted confidence bar */
     .dot-bar { display: flex; gap: 6px; margin: 6px 0 10px; }
     .dot { width: 10px; height: 10px; border-radius: 50%; background: #374151; }
+    .dot-darkred { background: #b91c1c; }
+    .dot-red { background: #ef4444; }
+    .dot-orange { background: #fb923c; }
+    .dot-yellow { background: #facc15; }
+    .dot-lightgreen { background: #4ade80; }
     .dot-green { background: #22c55e; }
+
+    .confidence { font-weight: bold; margin-bottom: 6px; }
+    .confidence-high { color: #22c55e; }
+    .confidence-moderate { color: #facc15; }
+    .confidence-low { color: #ef4444; }
+
+    /* ascending bars */
+    .history { margin: 12px 0 16px; }
+    .history-label { font-size: 13px; color: #9ca3af; margin-bottom: 6px; }
+    .bar-container { display: flex; align-items: flex-end; gap: 6px; height: 44px; }
+    .bar { width: 14px; border-radius: 4px; background: #374151; }
+    .bar-darkred { background: #b91c1c; }
+    .bar-red { background: #ef4444; }
+    .bar-orange { background: #fb923c; }
+    .bar-yellow { background: #facc15; }
+    .bar-lightgreen { background: #4ade80; }
+    .bar-green { background: #22c55e; }
+
+    .trend { font-weight: bold; margin-bottom: 8px; }
 
     .uptime-explain {
       margin: 8px 0 16px;
@@ -86,11 +117,7 @@
       color: #9ca3af;
     }
 
-    .footer a {
-      color: #60a5fa;
-      text-decoration: none;
-      margin: 0 6px;
-    }
+    .footer a { color: #60a5fa; text-decoration: none; margin: 0 6px; }
   </style>
 </head>
 
@@ -113,56 +140,80 @@
   </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const btn = document.getElementById("checkBtn");
-      const input = document.getElementById("websiteInput");
+    function getVisualConfig(score) {
+      if (score <= 20) return { on: 2, bar: "bar-darkred", dot: "dot-darkred", conf: "Low Confidence", ccls: "confidence-low" };
+      if (score <= 40) return { on: 4, bar: "bar-red", dot: "dot-red", conf: "Low Confidence", ccls: "confidence-low" };
+      if (score <= 55) return { on: 5, bar: "bar-orange", dot: "dot-orange", conf: "Moderate Confidence", ccls: "confidence-moderate" };
+      if (score <= 70) return { on: 7, bar: "bar-yellow", dot: "dot-yellow", conf: "Moderate Confidence", ccls: "confidence-moderate" };
+      if (score <= 85) return { on: 8, bar: "bar-lightgreen", dot: "dot-lightgreen", conf: "High Confidence", ccls: "confidence-high" };
+      return { on: 9, bar: "bar-green", dot: "dot-green", conf: "High Confidence", ccls: "confidence-high" };
+    }
+
+    document.getElementById("checkBtn").onclick = async () => {
+      const domain = document.getElementById("websiteInput").value.trim();
       const box = document.getElementById("resultBox");
+      if (!domain) return alert("Please enter a website domain");
 
-      btn.addEventListener("click", async () => {
-        const domain = input.value.trim();
-        if (!domain) {
-          alert("Please enter a website domain");
-          return;
-        }
+      box.style.display = "block";
+      box.innerHTML = "Analyzing website behavior...";
 
-        box.style.display = "block";
-        box.innerHTML = "Analyzing website behavior...";
+      try {
+        const res = await fetch(
+          "https://wtc-analyzer.vikasnarayantripathi.workers.dev/?domain=" + domain
+        );
+        const data = await res.json();
+        const explanations = Array.isArray(data.explanations) ? data.explanations : [];
 
-        try {
-          const res = await fetch(
-            "https://wtc-analyzer.vikasnarayantripathi.workers.dev/?domain=" + domain
-          );
+        const uptimeExplanations = explanations.filter(e =>
+          e.message.toLowerCase().includes("uptime") ||
+          e.message.toLowerCase().includes("availability")
+        );
 
-          const data = await res.json();
-          const explanations = Array.isArray(data.explanations) ? data.explanations : [];
+        const cfg = getVisualConfig(data.trust_score);
+        const heights = [12,16,20,24,28,32,36,40,42,44];
 
-          const uptimeText = explanations.filter(e =>
-            e.message.toLowerCase().includes("uptime") ||
-            e.message.toLowerCase().includes("availability")
-          );
+        box.innerHTML = `
+          <div class="score">${data.trust_score} / 100</div>
 
-          box.innerHTML = `
-            <div class="score">${data.trust_score ?? "—"} / 100</div>
+          <div class="dot-bar">
+            ${Array.from({ length: 10 }).map((_, i) =>
+              `<div class="dot ${i < cfg.on ? cfg.dot : ""}"></div>`
+            ).join("")}
+          </div>
 
-            <p><strong>Uptime:</strong> ${data.uptime?.last_day ?? "Collecting"}%</p>
-            ${uptimeText.map(e => `<div class="uptime-explain">${e.message}</div>`).join("")}
+          <div class="confidence ${cfg.ccls}">${cfg.conf}</div>
 
-            <span class="signal-title">Signal Breakdown:</span>
-            <ul>
-              ${explanations
-                .filter(e =>
-                  !e.message.toLowerCase().includes("uptime") &&
-                  !e.message.toLowerCase().includes("availability")
-                )
-                .map(e => `<li>${e.message}</li>`)
-                .join("")}
-            </ul>
-          `;
-        } catch (err) {
-          box.innerHTML = "Unable to analyze website right now.";
-        }
-      });
-    });
+          <div class="history">
+            <div class="history-label">Trust Strength</div>
+            <div class="bar-container">
+              ${Array.from({ length: 10 }).map((_, i) =>
+                i < cfg.on
+                  ? `<div class="bar ${cfg.bar}" style="height:${heights[i]}px"></div>`
+                  : `<div class="bar" style="height:10px"></div>`
+              ).join("")}
+            </div>
+          </div>
+
+          <div class="trend">→ ${data.trend}</div>
+
+          <p><strong>Uptime:</strong> ${data.uptime?.last_day ?? "Collecting"}%</p>
+          ${uptimeExplanations.map(e => `<div class="uptime-explain">${e.message}</div>`).join("")}
+
+          <span class="signal-title">Signal Breakdown:</span>
+          <ul>
+            ${explanations
+              .filter(e =>
+                !e.message.toLowerCase().includes("uptime") &&
+                !e.message.toLowerCase().includes("availability")
+              )
+              .map(e => `<li>${e.message}</li>`)
+              .join("")}
+          </ul>
+        `;
+      } catch {
+        box.innerHTML = "Unable to analyze website right now.";
+      }
+    };
   </script>
 </body>
 </html>
