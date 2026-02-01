@@ -26,7 +26,10 @@
       box-shadow: 0 0 30px rgba(0,0,0,0.5);
     }
 
-    h1 { text-align: center; margin-bottom: 20px; }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
     .form-group {
       display: flex;
@@ -41,6 +44,7 @@
       border-radius: 6px;
       border: none;
       font-size: 16px;
+      box-sizing: border-box;
     }
 
     button {
@@ -54,7 +58,9 @@
       cursor: pointer;
     }
 
-    button:hover { background: #1d4ed8; }
+    button:hover {
+      background: #1d4ed8;
+    }
 
     #resultBox {
       margin-top: 20px;
@@ -64,11 +70,26 @@
       background: #020617;
     }
 
-    .score { font-size: 32px; font-weight: bold; margin: 8px 0; }
+    .score {
+      font-size: 32px;
+      font-weight: bold;
+      margin: 8px 0;
+    }
 
     /* dotted confidence bar */
-    .dot-bar { display: flex; gap: 6px; margin: 6px 0 10px; }
-    .dot { width: 10px; height: 10px; border-radius: 50%; background: #374151; }
+    .dot-bar {
+      display: flex;
+      gap: 6px;
+      margin: 6px 0 10px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #374151;
+    }
+
     .dot-darkred { background: #b91c1c; }
     .dot-red { background: #ef4444; }
     .dot-orange { background: #fb923c; }
@@ -76,16 +97,39 @@
     .dot-lightgreen { background: #4ade80; }
     .dot-green { background: #22c55e; }
 
-    .confidence { font-weight: bold; margin-bottom: 6px; }
+    .confidence {
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
     .confidence-high { color: #22c55e; }
     .confidence-moderate { color: #facc15; }
     .confidence-low { color: #ef4444; }
 
     /* ascending bars */
-    .history { margin: 12px 0 16px; }
-    .history-label { font-size: 13px; color: #9ca3af; margin-bottom: 6px; }
-    .bar-container { display: flex; align-items: flex-end; gap: 6px; height: 44px; }
-    .bar { width: 14px; border-radius: 4px; background: #374151; }
+    .history {
+      margin: 12px 0 16px;
+    }
+
+    .history-label {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+
+    .bar-container {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 44px;
+    }
+
+    .bar {
+      width: 14px;
+      border-radius: 4px;
+      background: #374151;
+    }
+
     .bar-darkred { background: #b91c1c; }
     .bar-red { background: #ef4444; }
     .bar-orange { background: #fb923c; }
@@ -93,7 +137,10 @@
     .bar-lightgreen { background: #4ade80; }
     .bar-green { background: #22c55e; }
 
-    .trend { font-weight: bold; margin-bottom: 8px; }
+    .trend {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
 
     .uptime-explain {
       margin: 8px 0 16px;
@@ -108,6 +155,15 @@
       font-weight: bold;
     }
 
+    .disclaimer {
+      margin-top: 15px;
+      padding: 12px;
+      background: #020617;
+      border-left: 4px solid #facc15;
+      color: #fde68a;
+      font-size: 14px;
+    }
+
     .footer {
       margin-top: 25px;
       padding-top: 15px;
@@ -117,7 +173,11 @@
       color: #9ca3af;
     }
 
-    .footer a { color: #60a5fa; text-decoration: none; margin: 0 6px; }
+    .footer a {
+      color: #60a5fa;
+      text-decoration: none;
+      margin: 0 6px;
+    }
   </style>
 </head>
 
@@ -209,6 +269,14 @@
               .map(e => `<li>${e.message}</li>`)
               .join("")}
           </ul>
+
+          <div class="disclaimer">
+            <strong>Disclaimer:</strong>
+            Website Trust Checker provides an informational trust signal based on
+            observable technical behavior and availability patterns.
+            It is not a security audit, certification, or guarantee of safety.
+            Users should apply their own judgment before interacting with any website.
+          </div>
         `;
       } catch {
         box.innerHTML = "Unable to analyze website right now.";
