@@ -35,23 +35,16 @@
       margin-bottom: 10px;
     }
 
-    input {
-      width: 100%;
+    input, button {
       padding: 12px;
       border-radius: 6px;
       border: none;
       font-size: 16px;
-      box-sizing: border-box;
     }
 
     button {
-      width: 100%;
-      padding: 12px;
       background: #2563eb;
       color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
       cursor: pointer;
     }
 
@@ -67,5 +60,109 @@
 
     .score { font-size: 32px; font-weight: bold; margin: 8px 0; }
 
-    .dot-bar { display: flex; gap: 6px; margin: 6px 0 10px 0; }
-    .dot { wi
+    .dot-bar { display: flex; gap: 6px; margin: 6px 0 10px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #374151; }
+    .dot-green { background: #22c55e; }
+
+    .uptime-explain {
+      margin: 8px 0 16px;
+      font-size: 14px;
+      color: #9ca3af;
+    }
+
+    .signal-title {
+      display: block;
+      margin-top: 18px;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    .footer {
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 1px solid #1e293b;
+      font-size: 14px;
+      text-align: center;
+      color: #9ca3af;
+    }
+
+    .footer a {
+      color: #60a5fa;
+      text-decoration: none;
+      margin: 0 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Website Trust Checker</h1>
+
+    <div class="form-group">
+      <input id="websiteInput" type="text" placeholder="example.com" />
+      <button id="checkBtn">Check Trust</button>
+    </div>
+
+    <div id="resultBox"></div>
+
+    <div class="footer">
+      <a href="about.html">How it Works</a> |
+      <a href="privacy.html">Privacy Policy</a> |
+      <a href="terms.html">Terms of Use</a>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const btn = document.getElementById("checkBtn");
+      const input = document.getElementById("websiteInput");
+      const box = document.getElementById("resultBox");
+
+      btn.addEventListener("click", async () => {
+        const domain = input.value.trim();
+        if (!domain) {
+          alert("Please enter a website domain");
+          return;
+        }
+
+        box.style.display = "block";
+        box.innerHTML = "Analyzing website behavior...";
+
+        try {
+          const res = await fetch(
+            "https://wtc-analyzer.vikasnarayantripathi.workers.dev/?domain=" + domain
+          );
+
+          const data = await res.json();
+          const explanations = Array.isArray(data.explanations) ? data.explanations : [];
+
+          const uptimeText = explanations.filter(e =>
+            e.message.toLowerCase().includes("uptime") ||
+            e.message.toLowerCase().includes("availability")
+          );
+
+          box.innerHTML = `
+            <div class="score">${data.trust_score ?? "—"} / 100</div>
+
+            <p><strong>Uptime:</strong> ${data.uptime?.last_day ?? "Collecting"}%</p>
+            ${uptimeText.map(e => `<div class="uptime-explain">${e.message}</div>`).join("")}
+
+            <span class="signal-title">Signal Breakdown:</span>
+            <ul>
+              ${explanations
+                .filter(e =>
+                  !e.message.toLowerCase().includes("uptime") &&
+                  !e.message.toLowerCase().includes("availability")
+                )
+                .map(e => `<li>${e.message}</li>`)
+                .join("")}
+            </ul>
+          `;
+        } catch (err) {
+          box.innerHTML = "Unable to analyze website right now.";
+        }
+      });
+    });
+  </script>
+</body>
+</html>
